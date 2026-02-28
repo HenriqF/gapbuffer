@@ -20,13 +20,16 @@ void initGb(GapBuffer* gb, size_t gap_size){
 }
 
 void renderBuff(GapBuffer gb){
+    //printf("(%lld, %lld)", gb.gapl, gb.gapr);
     printf("[");
     for(size_t i = 0; i < gb.gapl; i++){
         printf("%c",gb.buffer[i]);
     }
 
-    for(size_t i = gb.gapl+1; i < gb.gapr+1; i++){
-        printf("_");
+    for(size_t i = gb.gapl; i < gb.gapr+1; i++){
+        if (gb.buffer[i]) printf("%c",gb.buffer[i]);
+        else printf("_");
+        
     }
 
     for(size_t i = gb.gapr+1; i < gb.buffer_size; i++){
@@ -36,33 +39,44 @@ void renderBuff(GapBuffer gb){
 }
 
 
-// void grow(GapBuffer* gb){
+void grow(GapBuffer* gb){
+    gb->buffer = realloc(gb->buffer, gb->buffer_size+gb->gap_size);
+    gb->buffer_size += gb->gap_size;
 
-// }
+    for (size_t i = gb->gapr; i < gb->buffer_size; i++){
+        gb->buffer[i+gb->gap_size] = gb->buffer[i];
+    }
+    gb->gapr += gb->gap_size;
+
+    if (gb->gapr == gb->buffer_size-1){
+        gb->buffer[gb->gapr] = 0;
+    }
+}
 
 void insert(GapBuffer* gb, char c){
-
     if (gb->gapl > gb->gapr){
-        printf("wow");
+        grow(gb);
     }
 
     gb->buffer[gb->gapl] = c;
     gb->gapl++;
-
-
-
+    renderBuff(*gb);
 }
 
 
 int main(){
     GapBuffer gb;
     initGb(&gb, (size_t)3);
-    insert(&gb, 'a');
-    insert(&gb, 'b');
-    insert(&gb, 'b');
-    insert(&gb, 'c');
 
 
-    renderBuff(gb);
+    for (int i = 0; i < 26; i++){
+        insert(&gb, (char)i+97);
+
+        if (i % 7 == 0 && i != 0 ){
+            //printf("volta");
+            gb.gapl = i/7;
+        }
+    }
+    
     return 0;
 }
