@@ -1,3 +1,3 @@
-gcc gap.c -o gap -Wall -Wextra
+gcc gap.c rw/readwrite.c -o gap -Wall -Wextra
 .\gap
 rm gap
