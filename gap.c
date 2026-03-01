@@ -10,14 +10,17 @@
 typedef struct{
     char* buffer;
     size_t buffer_size;
+    size_t gap_size; //tamanho padrao, nao muda
 
-    size_t gap_size;
+
     size_t gapl;
     size_t gapr;
 
 } GapBuffer;
 
 void initGb(GapBuffer* gb, size_t gap_size){
+    if (gap_size < 1) gap_size = 1;
+
     gb->buffer = calloc(gap_size, gap_size*sizeof(char));
     gb->buffer_size = gap_size;
     gb->gap_size = gap_size;
@@ -26,14 +29,26 @@ void initGb(GapBuffer* gb, size_t gap_size){
 }
 
 void printValid(char c){
-    if (isprint(c)) printf("%c",c);
+    if (isprint(c) || c == '\n' || c == '\r') printf("%c",c);
     else printf("_");
 }
 
+char* getText(GapBuffer gb){
+    char* result = malloc(gb.buffer_size*sizeof(char)+1);
+
+    size_t result_index = 0;
+    for(size_t i = 0; i < gb.gapl; i++){
+        if (gb.buffer[i] != 0) result[result_index++] = gb.buffer[i];
+    }
+    for(size_t i = gb.gapr+1; i < gb.buffer_size; i++){
+        if (gb.buffer[i] != 0) result[result_index++] = gb.buffer[i];
+    }
+    result[result_index] = '\0';
+
+    return result;
+}
+
 void renderBuff(GapBuffer gb){
-    // printf("[%s]  ", gb.buffer);
-
-
     printf("[");
     for(size_t i = 0; i < gb.gapl; i++){
         printValid(gb.buffer[i]);
@@ -49,6 +64,10 @@ void renderBuff(GapBuffer gb){
         printValid(gb.buffer[i]);
     }
     printf("]\n");
+
+    char* r =getText(gb);
+    printf("%s\n\n", r);
+    free(r);
 }
 
 void grow(GapBuffer* gb){
@@ -79,6 +98,15 @@ void insert(GapBuffer* gb, char c){
 
     gb->buffer[gb->gapl] = c;
     gb->gapl++;
+}
+
+void delete(GapBuffer* gb){
+    if (gb->gapl == 0){
+        return;
+    }
+
+    gb->buffer[gb->gapl-1] = 0;
+    gb->gapl--;
 }
 
 void insertText(GapBuffer* gb, char* text, size_t size){
@@ -114,7 +142,7 @@ void moveRight(GapBuffer* gb){
 
 int main(){
     GapBuffer gb;
-    initGb(&gb, (size_t)20);
+    initGb(&gb, (size_t)10);
 
     FILE* f = fopen("_/a.txt", "rb");
     size_t size;
@@ -124,33 +152,40 @@ int main(){
 
     insertText(&gb, content, size);
     renderBuff(gb);
-    insertText(&gb, content, size);
+
+    moveLeft(&gb);
     renderBuff(gb);
-    insertText(&gb, content, size);
+
+    moveLeft(&gb);
     renderBuff(gb);
 
-    // insert(&gb, 'a');
-    // renderBuff(gb);
-
-    // insert(&gb, 'b');
-    // renderBuff(gb);
-
-    // insert(&gb, 'c');
-    // renderBuff(gb);
-
-    // moveLeft(&gb);
-    // renderBuff(gb);
-
-    // moveLeft(&gb);
-    // renderBuff(gb);
+    for (int i =0 ; i <14 ;i++) delete(&gb);
     
-    // insert(&gb, 'd');
-    // renderBuff(gb);
+    renderBuff(gb);
 
-    // insert(&gb, 'e');
-    // renderBuff(gb);
+    insertText(&gb, content, size);
+    renderBuff(gb);
 
-    // insert(&gb, 'f');
-    // renderBuff(gb);
+    insert(&gb, ' ');
+    renderBuff(gb);
+
+    insert(&gb, 'a');
+    renderBuff(gb);
+
+    insert(&gb, ' ');
+    renderBuff(gb);
+
+
+    moveRight(&gb);
+    renderBuff(gb);
+
+    insert(&gb, ' ');
+    renderBuff(gb);
+
+    moveRight(&gb);
+    renderBuff(gb);
+
+    insertText(&gb, content, size);
+    renderBuff(gb);
     return 0;
 }
