@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include "rw/readwrite.h"
 
@@ -30,6 +31,9 @@ void printValid(char c){
 }
 
 void renderBuff(GapBuffer gb){
+    // printf("[%s]  ", gb.buffer);
+
+
     printf("[");
     for(size_t i = 0; i < gb.gapl; i++){
         printValid(gb.buffer[i]);
@@ -48,29 +52,33 @@ void renderBuff(GapBuffer gb){
 }
 
 void grow(GapBuffer* gb){
-    
-    gb->buffer = realloc(gb->buffer, gb->buffer_size+gb->gap_size);
+    char* temp = realloc(gb->buffer, gb->buffer_size+gb->gap_size);
+    gb->buffer = temp;
     gb->buffer_size += gb->gap_size;
 
-    for (size_t i = gb->gapr; i < gb->buffer_size; i++){
-        gb->buffer[i+gb->gap_size] = gb->buffer[i];
+    for (size_t i = gb->buffer_size-1; i > gb->buffer_size-gb->gap_size; i--){
+        gb->buffer[i] = 0;
     }
-    gb->gapr += gb->gap_size;
-    gb->buffer[gb->gapr] = 0;
 
-    // if (gb->gapr == gb->buffer_size-1){
-    //     gb->buffer[gb->gapr] = 0;
-    // }
+    if (gb->gapr < gb->buffer_size-gb->gap_size-1){
+        size_t afteri = gb->gapl+1;
+        size_t aftere = gb->buffer_size-gb->gap_size-1;
+        size_t l = aftere-afteri+1;
+
+        memmove(gb->buffer+(gb->buffer_size-l), gb->buffer+afteri, l);
+        memset(gb->buffer+afteri, '\0', l);
+    }
+
+    gb->gapr += gb->gap_size;
 }
 
 void insert(GapBuffer* gb, char c){
-    if (gb->gapl > gb->gapr){
+    if (gb->gapl == gb->gapr){
         grow(gb);
     }
 
     gb->buffer[gb->gapl] = c;
     gb->gapl++;
-
 }
 
 void insertText(GapBuffer* gb, char* text, size_t size){
@@ -104,7 +112,6 @@ void moveRight(GapBuffer* gb){
 }
 
 
-
 int main(){
     GapBuffer gb;
     initGb(&gb, (size_t)20);
@@ -117,6 +124,33 @@ int main(){
 
     insertText(&gb, content, size);
     renderBuff(gb);
+    insertText(&gb, content, size);
+    renderBuff(gb);
+    insertText(&gb, content, size);
+    renderBuff(gb);
 
+    // insert(&gb, 'a');
+    // renderBuff(gb);
+
+    // insert(&gb, 'b');
+    // renderBuff(gb);
+
+    // insert(&gb, 'c');
+    // renderBuff(gb);
+
+    // moveLeft(&gb);
+    // renderBuff(gb);
+
+    // moveLeft(&gb);
+    // renderBuff(gb);
+    
+    // insert(&gb, 'd');
+    // renderBuff(gb);
+
+    // insert(&gb, 'e');
+    // renderBuff(gb);
+
+    // insert(&gb, 'f');
+    // renderBuff(gb);
     return 0;
 }
