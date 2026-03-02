@@ -1,23 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include "rw/readwrite.h"
+#include "gap.h"
 
-#define RED "\x1b[31m"
-#define RESET "\x1b[0m"
-
-typedef struct{
-    char* buffer;
-    size_t buffer_size;
-    size_t gap_size; //tamanho padrao, nao muda
-
-
-    size_t gapl;
-    size_t gapr;
-
-} GapBuffer;
-
+//init
 void initGb(GapBuffer* gb, size_t gap_size){
     if (gap_size < 1) gap_size = 1;
 
@@ -28,6 +11,8 @@ void initGb(GapBuffer* gb, size_t gap_size){
     gb->gapr = gap_size-1;
 }
 
+
+//getting content
 void printValid(char c){
     if (isprint(c) || c == '\n' || c == '\r') printf("%c",c);
     else printf("_");
@@ -55,9 +40,9 @@ void renderBuff(GapBuffer gb){
     }
 
     for(size_t i = gb.gapl; i < gb.gapr+1; i++){
-        printf(RED);
+        printf(GBRED);
         printValid(gb.buffer[i]);
-        printf(RESET);
+        printf(GBRESET);
     }
 
     for(size_t i = gb.gapr+1; i < gb.buffer_size; i++){
@@ -70,6 +55,8 @@ void renderBuff(GapBuffer gb){
     free(r);
 }
 
+
+//grow
 void grow(GapBuffer* gb){
     char* temp = realloc(gb->buffer, gb->buffer_size+gb->gap_size);
     gb->buffer = temp;
@@ -91,7 +78,9 @@ void grow(GapBuffer* gb){
     gb->gapr += gb->gap_size;
 }
 
-void insert(GapBuffer* gb, char c){
+
+//insert, delete
+void insertChar(GapBuffer* gb, char c){
     if (gb->gapl == gb->gapr){
         grow(gb);
     }
@@ -100,7 +89,13 @@ void insert(GapBuffer* gb, char c){
     gb->gapl++;
 }
 
-void delete(GapBuffer* gb){
+void insertString(GapBuffer* gb, char* text, size_t size){
+    for (size_t i = 0; i < size; i++){
+        insertChar(gb, text[i]);
+    }
+}
+
+void deleteChar(GapBuffer* gb){
     if (gb->gapl == 0){
         return;
     }
@@ -109,12 +104,8 @@ void delete(GapBuffer* gb){
     gb->gapl--;
 }
 
-void insertText(GapBuffer* gb, char* text, size_t size){
-    for (size_t i = 0; i < size; i++){
-        insert(gb, text[i]);
-    }
-}
 
+//movingfs
 void moveLeft(GapBuffer* gb){
     if (gb->gapl == 0){
         return;
@@ -137,55 +128,4 @@ void moveRight(GapBuffer* gb){
     gb->buffer[gb->gapr] = gb->buffer[gb->gapl];
     gb->buffer[gb->gapl] = temp;
     gb->gapl++;
-}
-
-
-int main(){
-    GapBuffer gb;
-    initGb(&gb, (size_t)10);
-
-    FILE* f = fopen("_/a.txt", "rb");
-    size_t size;
-    char* content;
-    readFile(f, &size, &content);
-    fclose(f);
-
-    insertText(&gb, content, size);
-    renderBuff(gb);
-
-    moveLeft(&gb);
-    renderBuff(gb);
-
-    moveLeft(&gb);
-    renderBuff(gb);
-
-    for (int i =0 ; i <14 ;i++) delete(&gb);
-    
-    renderBuff(gb);
-
-    insertText(&gb, content, size);
-    renderBuff(gb);
-
-    insert(&gb, ' ');
-    renderBuff(gb);
-
-    insert(&gb, 'a');
-    renderBuff(gb);
-
-    insert(&gb, ' ');
-    renderBuff(gb);
-
-
-    moveRight(&gb);
-    renderBuff(gb);
-
-    insert(&gb, ' ');
-    renderBuff(gb);
-
-    moveRight(&gb);
-    renderBuff(gb);
-
-    insertText(&gb, content, size);
-    renderBuff(gb);
-    return 0;
 }
