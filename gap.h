@@ -23,7 +23,7 @@ void initGb(GapBuffer* gb, size_t gap_size);
 //getting content
 void printValid(char c);
 char* getText(GapBuffer gb);
-void renderBuff(GapBuffer gb);
+void renderBuff(GapBuffer gb, int s);
 
 //grow
 void grow(GapBuffer* gb);

@@ -33,16 +33,14 @@ char* getText(GapBuffer gb){
     return result;
 }
 
-void renderBuff(GapBuffer gb){
+void renderBuff(GapBuffer gb, int s){
     printf("[");
     for(size_t i = 0; i < gb.gapl; i++){
         printValid(gb.buffer[i]);
     }
 
-    for(size_t i = gb.gapl; i < gb.gapr+1; i++){
-        printf(GBRED);
-        printValid(gb.buffer[i]);
-        printf(GBRESET);
+    if (s) {
+        for(size_t i = gb.gapl; i < gb.gapr+1; i++) printf(GBRED "_" GBRESET);
     }
 
     for(size_t i = gb.gapr+1; i < gb.buffer_size; i++){

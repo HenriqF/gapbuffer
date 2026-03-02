@@ -11,11 +11,11 @@ int main(){
     readFile(f, &size, &content);
     fclose(f);
     insertString(&gb, content, size);
-    renderBuff(gb);
+    renderBuff(gb, 1);
 
 
     insertChar(&gb, 'a');
-    renderBuff(gb);
+    renderBuff(gb, 1);
 
     char* result = getText(gb);
     f = fopen("_/a.txt", "wb");
